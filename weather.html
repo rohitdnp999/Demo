@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Weather App</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            background-color: rgb(10, 6, 77);
+            color: white;
+        }
+
+        .container {
+            font-size: 1.5rem;
+            height: 40vh;
+            width: 30%;
+            border: 2px solid orange;
+            margin: 0 auto;
+            text-align: center;
+            padding: 13px;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            margin-top: 250px;
+            text-transform: capitalize;
+            border-radius: 20px;
+
+            & h1{
+                margin: 10px;
+                padding: 10px;
+            }
+        }
+        
+        .p {
+            font-size: 2rem;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .inp input {
+            height: 5vh;
+            width: 90%;
+            padding: 5px;
+            border-radius: 10px;
+            font-size: 1.5rem;
+        }
+
+        .box2 {
+            height: 10vh;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0 20px;
+            font-size: 2rem;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="container">
+        <h1>Weather App</h1>
+        <div class="inp">
+            <form action="" id="form">
+                <input type="text" name="" id="search" placeholder="Check city..." autocomplete="off">
+            </form>
+        </div>
+
+        <div class="p">
+            <div class="img">
+                <img src="" alt="weather" id="img">
+            </div>
+            <h1 id="degree">32°C</h1>
+        </div>
+
+        <div class="box2">
+            <p id="cloud">Clear</p>
+            <p id="city">City</p>
+        </div>
+
+    </div>
+
+    <script >
+
+
+    document.addEventListener('DOMContentLoaded', () => {
+        const form = document.getElementById("form");
+        const search = document.getElementById("search");
+        const img = document.getElementById("img");
+        const degree = document.getElementById("degree");
+        const cloud = document.getElementById("cloud");
+        const city = document.getElementById("city");
+
+        async function fetchApi(c) {
+            try {
+                const api = await fetch(`https://api.openweathermap.org/data/2.5/weather?q=${c}&appid=e2e037dece162079b4d91de00aefb40e&units=metric`);
+                const convert = await api.json();
+                if (convert.cod !== 200) {
+                    throw new Error(convert.message);
+                }
+                console.log(convert);
+                update(convert);
+            } catch (error) {
+                console.error('Error fetching weather data:', error);
+                alert('City not found!');
+            }
+        }
+
+        async function getPosition(lat, lon) {
+            try {
+                const d = await fetch(`https://api.openweathermap.org/data/2.5/weather?lat=${lat}&lon=${lon}&appid=e2e037dece162079b4d91de00aefb40e&units=metric`);
+                const x = await d.json();
+                if (x.cod !== 200) {
+                    throw new Error(x.message);
+                }
+                return update(x);
+            } catch (error) {
+                console.error('Error fetching weather data:', error);
+            }
+        }
+
+        function update(convert) {
+            degree.textContent = Math.round(convert.main.temp) + "°C";
+            cloud.textContent = convert.weather[0].description;
+            city.textContent = convert.name;
+
+            const icons = convert.weather[0].icon;
+            const d = `https://openweathermap.org/img/wn/${icons}.png`;
+            img.src = d;
+        }
+
+        navigator.geolocation.getCurrentPosition((position) => {
+            const { latitude: lat, longitude: lon } = position.coords;
+            getPosition(lat, lon);
+        }, (err) => {
+            console.log(err);
+        });
+
+        form.addEventListener("submit", (e) => {
+            e.preventDefault();
+            fetchApi(search.value);
+        });
+    });
+
+
+    </script>
+</body>
+
+</html>
